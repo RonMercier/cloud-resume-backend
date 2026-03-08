@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Cloud Resume Backend (Lambda + API Gateway + DynamoDB)
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 10
+Resources:
+  VisitorTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: visitorCount
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - AttributeName: id
+        AttributeType: S
+      KeySchema:
+      - AttributeName: id
+        KeyType: HASH
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: Prod
+      CorsConfiguration:
+        AllowOrigins:
+        - https://ron-mercier101.com
+        AllowHeaders:
+        - Content-Type
+        - Authorization
+        - x-requested-with
+        - x-api-key
+        AllowMethods:
+        - GET
+        - OPTIONS
+        MaxAge: 3600
+  VisitorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: visitor-counter-lambda
+      CodeUri: VisitorFunction
+      Handler: app.lambda_handler
+      Environment:
+        Variables:
+          TABLE_NAME:
+            Ref: VisitorTable
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: VisitorTable
+      Events:
+        ApiEvent:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: HttpApi
+            Path: /count
+            Method: GET
+    Metadata:
+      SamResourceId: VisitorFunction
+Outputs:
+  ApiEndpoint:
+    Description: HTTPS endpoint for the Visitor Counter API (GET /count)
+    Value:
+      Fn::Sub: https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/count
+  TableName:
+    Description: DynamoDB table name
+    Value:
+      Ref: VisitorTable
+  FunctionName:
+    Description: Lambda function name
+    Value:
+      Ref: VisitorFunction
