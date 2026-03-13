@@ -20,7 +20,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::637423424745:role/GitHubActionsDeployRole
-          aws-region: us-east-1
+          aws-region: us-east-2   # <-- deploy region for the backend
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -30,16 +30,16 @@ jobs:
       - name: Install dependencies
         run: |
           if [ -f src/requirements.txt ]; then
-            pip install -r src/requirements.txt;
+            pip install -r src/requirements.txt
+          else
+            echo "No src/requirements.txt, skipping Lambda deps"
           fi
           pip install pytest
 
       - name: Run unit tests
         env:
-          PYTHONPATH
-
-     # - name: Run unit tests
-      #  run: pytest -q
+          PYTHONPATH: src
+        run: pytest -q
 
       - name: Install SAM CLI
         run: pip install aws-sam-cli
