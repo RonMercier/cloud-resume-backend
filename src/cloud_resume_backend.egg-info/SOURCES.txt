@@ -1,8 +1,0 @@
-pyproject.toml
-src/app.py
-src/cloud_resume_backend.egg-info/PKG-INFO
-src/cloud_resume_backend.egg-info/SOURCES.txt
-src/cloud_resume_backend.egg-info/dependency_links.txt
-src/cloud_resume_backend.egg-info/requires.txt
-src/cloud_resume_backend.egg-info/top_level.txt
-tests/test_app.py
