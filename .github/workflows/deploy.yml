@@ -1,8 +1,13 @@
+# .github/workflows/deploy.yml
 name: Backend CI/CD
 
 on:
   push:
     branches: [ "main" ]
+
+env:
+  # Opt JS actions into Node 24 runtime now (stops Node20 deprecation warnings)
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 permissions:
   id-token: write
@@ -14,31 +19,42 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Configure AWS credentials via OIDC
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws:iam::637423424745:role/GitHubActionsDeployRole
-          aws-region: us-east-2   # <-- deploy region for the backend
+          aws-region: us-east-2  # <-- deploy region for the backend
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+
       - name: Install dependencies
         run: |
-          if [ -f src/requirements.txt ]; then
-            pip install -r src/requirements.txt
-          else
-            echo "No src/requirements.txt, skipping Lambda deps"
-          fi
-          pip install pytest
+          python -m pip install --upgrade pip
+          # App deps
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          # Dev/test deps (optional file)
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+
+      # Optional: clean caches to avoid stale pyc issues
+      - name: Clean Python caches
+        run: |
+          find . -type d -name "__pycache__" -prune -exec rm -rf {} +
+          find . -type f -name "*.pyc" -delete
+          rm -rf .pytest_cache
 
       - name: Run unit tests
-        env:
-          PYTHONPATH: src
         run: pytest -q
 
       - name: Install SAM CLI
