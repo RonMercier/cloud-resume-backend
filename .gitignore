@@ -1,0 +1,16 @@
+# Python bytecode + cache
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Virtual environment
+.venv/
+
+# SAM build artifacts
+.aws-sam/
+
+# VSCode settings (optional)
+.vscode/
+
+# macOS/Linux junk (optional)
+.DS_Store
