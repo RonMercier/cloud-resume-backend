@@ -1,8 +1,0 @@
-#!/bin/sh
-'''exec' "/home/si13nt_kn1ght/Documents/Cloud Resume Portfolio/backend/.venv/bin/python" "$0" "$@"
-' '''
-import sys
-from moto.server import main
-if __name__ == '__main__':
-    sys.argv[0] = sys.argv[0].removesuffix('.exe')
-    sys.exit(main())
