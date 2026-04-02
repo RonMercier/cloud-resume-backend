@@ -1,5 +1,5 @@
 # Cloud Resume Challenge — Backend (AWS SAM)
-Serverless backend powering my Cloud Resume Challenge.
+Serverless backend powering my Cloud Resume.
 Implements a visitor counter API using AWS Lambda, API Gateway (HTTP API), and DynamoDB, all deployed via AWS SAM and automated with GitHub Actions CI/CD.
 
 This backend corresponds to Steps 12–14 of the Cloud Resume Challenge guidebook, which requires:
