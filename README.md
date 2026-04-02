@@ -29,7 +29,7 @@ The architecture follows the guidebook’s requirement to define all API, Lambda
 .
 ├── src/
 │   ├── app.py                # Lambda handler (visitor counter logic)
-│   └── requirements.txt      # Third-party dependencies (optional/empty)
+│   └── requirements.txt      # Third-party dependencies 
 ├── tests/                    # pytest tests
 ├── template.yaml             # SAM template (IaC)
 ├── samconfig.toml            # Auto-created after first deploy
