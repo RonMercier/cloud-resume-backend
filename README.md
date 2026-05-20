@@ -2,7 +2,7 @@
 
 ![Deploy](https://github.com/RonMercier/cloud-resume-backend/actions/workflows/deploy.yml/badge.svg)
 
-**Serverless visitor counter API for the Cloud Resume Challenge — built with AWS Lambda, DynamoDB, API Gateway, AWS SAM, and OIDC-authenticated GitHub Actions CI/CD.**
+**Serverless visitor counter API for the Cloud Resume Challenge - built with AWS Lambda, DynamoDB, API Gateway, AWS SAM, and OIDC-authenticated GitHub Actions CI/CD.**
 
 This is the backend half of the Cloud Resume Challenge. It implements Steps 12–14 of the challenge specification: Infrastructure as Code, a dedicated backend repository, and automated CI/CD for all Lambda and API deployments. No manual console clicks after initial setup.
 
@@ -19,8 +19,8 @@ This is the backend half of the Cloud Resume Challenge. It implements Steps 12�
 |---|---|---|
 | **Ingress** | API Gateway (HTTP API) | Exposes `GET /count` with CORS for `ron-mercier101.com` |
 | **Logic** | Lambda (Python 3.12) | Reads and increments visitor count atomically |
-| **Data** | DynamoDB (PAY_PER_REQUEST) | Single-table design — stores visitor count by `id` key |
-| **IaC** | AWS SAM | Defines all resources in `template.yaml` — no console config |
+| **Data** | DynamoDB (PAY_PER_REQUEST) | Single-table design - stores visitor count by `id` key |
+| **IaC** | AWS SAM | Defines all resources in `template.yaml` - no console config |
 | **CI/CD** | GitHub Actions + OIDC | Test → Build → Deploy on every push to `main` |
 
 ---
@@ -46,13 +46,13 @@ Returns the current visitor count. Increments atomically on each call.
 ```
 cloud-resume-backend/
 ├── src/
-│   ├── app.py                # Lambda handler — visitor counter logic
+│   ├── app.py                # Lambda handler - visitor counter logic
 │   └── requirements.txt      # Lambda dependencies (boto3 pre-installed in runtime)
 ├── tests/
 │   └── test_handler.py       # pytest unit tests for the Lambda handler
 ├── assets/
 │   └── architecture.png      # Architecture diagram
-├── template.yaml             # SAM template — all IaC defined here
+├── template.yaml             # SAM template - all IaC defined here
 ├── samconfig.toml            # SAM deployment config (auto-generated on first deploy)
 ├── pyproject.toml            # Python project config
 ├── requirements.txt          # Local dev dependencies (pytest, boto3, etc.)
@@ -63,20 +63,20 @@ cloud-resume-backend/
 
 ---
 
-## SAM Template — What Gets Deployed
+## SAM Template - What Gets Deployed
 
 The `template.yaml` defines the entire backend stack. Nothing is created manually in the AWS Console.
 
 **DynamoDB table (`visitorCount`)**
-- Billing: `PAY_PER_REQUEST` — scales to zero when idle, no provisioned capacity waste
-- Key: `id` (String, HASH) — single-item design for the counter
+- Billing: `PAY_PER_REQUEST` - scales to zero when idle, no provisioned capacity waste
+- Key: `id` (String, HASH) - single-item design for the counter
 - Named explicitly to protect against accidental renames via CloudFormation drift
 
 **HTTP API (`HttpApi`)**
-- Type: `AWS::Serverless::HttpApi` (HTTP API, not REST API — lower latency, ~70% cheaper)
+- Type: `AWS::Serverless::HttpApi` (HTTP API, not REST API - lower latency, ~70% cheaper)
 - Stage: `Prod`
 - CORS: `GET` and `OPTIONS` methods, `https://ron-mercier101.com` origin only
-- `MaxAge: 3600` — preflight responses cached for 1 hour
+- `MaxAge: 3600` - preflight responses cached for 1 hour
 
 **Lambda function (`visitor-counter-lambda`)**
 - Runtime: Python 3.12
@@ -147,7 +147,7 @@ push to main
 └─────────────────────────────────────────┘
 ```
 
-**Authentication — OIDC setup:**
+**Authentication - OIDC setup:**
 
 The GitHub Actions workflow uses OIDC to assume an IAM role. No AWS credentials are stored in GitHub Secrets. To replicate this setup:
 
@@ -172,7 +172,7 @@ The GitHub Actions workflow uses OIDC to assume an IAM role. No AWS credentials 
 }
 ```
 
-3. Attach the role ARN as a GitHub Actions variable (not a secret — it's not sensitive)
+3. Attach the role ARN as a GitHub Actions variable (not a secret - it's not sensitive)
 4. In the workflow, use `aws-actions/configure-aws-credentials` with `role-to-assume`
 
 ---
@@ -182,10 +182,10 @@ The GitHub Actions workflow uses OIDC to assume an IAM role. No AWS credentials 
 **Prerequisites**
 - Python 3.12
 - AWS SAM CLI
-- AWS credentials configured locally (for local deploys — CI uses OIDC)
+- AWS credentials configured locally (for local deploys - CI uses OIDC)
 - Git
 
-**Setup (Fedora/RHEL — adapt package manager for your OS)**
+**Setup (Fedora/RHEL - adapt package manager for your OS)**
 
 ```bash
 # Install system dependencies
@@ -224,7 +224,7 @@ If SAM can't find pip inside the build environment:
 sam build --use-container
 ```
 
-**First deploy (guided — generates samconfig.toml)**
+**First deploy (guided - generates samconfig.toml)**
 
 ```bash
 sam deploy --guided
@@ -266,7 +266,7 @@ After any deployment, call the real API endpoint to confirm the full stack is wo
 curl https://YOUR_API_ENDPOINT/Prod/count
 ```
 
-A valid JSON response with a `count` field confirms Lambda executed, DynamoDB updated, and API Gateway is routing correctly. This is the definitive test that IaC + CI/CD deployed successfully — no amount of unit tests can replicate it.
+A valid JSON response with a `count` field confirms Lambda executed, DynamoDB updated, and API Gateway is routing correctly. This is the definitive test that IaC + CI/CD deployed successfully - no amount of unit tests can replicate it.
 
 ---
 
@@ -274,18 +274,18 @@ A valid JSON response with a `count` field confirms Lambda executed, DynamoDB up
 
 **`samconfig.toml`** is auto-generated on first guided deploy. It stores your stack name, region, S3 bucket for artifacts, and deployment preferences so subsequent `sam deploy` calls are non-interactive.
 
-**`requirements.txt not found, continuing without dependencies`** — this SAM message is normal if `src/requirements.txt` is empty. `boto3` is pre-installed in the Lambda Python runtime and doesn't need to be bundled.
+**`requirements.txt not found, continuing without dependencies`** - this SAM message is normal if `src/requirements.txt` is empty. `boto3` is pre-installed in the Lambda Python runtime and doesn't need to be bundled.
 
-**Stack updates** — CloudFormation performs change detection. Only modified resources are updated. DynamoDB tables are not replaced on schema changes to existing attributes (only additions are safe — removing or changing key attributes requires table replacement and data migration).
+**Stack updates** - CloudFormation performs change detection. Only modified resources are updated. DynamoDB tables are not replaced on schema changes to existing attributes (only additions are safe - removing or changing key attributes requires table replacement and data migration).
 
 ---
 
 ## Related
 
-- [AWS-S3-Static-Website](https://github.com/RonMercier/AWS-S3-Static-Website) — Frontend counterpart: portfolio site hosted on S3 + CloudFront
-- [securebydefault-server-hardening](https://github.com/RonMercier/securebydefault-server-hardening) — Production Linux server hardening configs
-- [cloud-security-checklist](https://github.com/RonMercier/cloud-security-checklist) — 28-point security baseline checklist
-- [SecureByDefault.io](https://securebydefault.io) — Security engineering blog
+- [AWS-S3-Static-Website](https://github.com/RonMercier/AWS-S3-Static-Website) - Frontend counterpart: portfolio site hosted on S3 + CloudFront
+- [securebydefault-server-hardening](https://github.com/RonMercier/securebydefault-server-hardening) - Production Linux server hardening configs
+- [cloud-security-checklist](https://github.com/RonMercier/cloud-security-checklist) - 28-point security baseline checklist
+- [SecureByDefault.io](https://securebydefault.io) - Security engineering blog
 
 ---
 
