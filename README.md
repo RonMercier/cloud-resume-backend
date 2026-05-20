@@ -291,7 +291,7 @@ A valid JSON response with a `count` field confirms Lambda executed, DynamoDB up
 
 ## About
 
-Built by **Ron Mercier** — Cloud & Cybersecurity Engineer.
+Built by **Ron Mercier** - Cloud & Cybersecurity Engineer.
 Previously: DDoS mitigation and incident response at Akamai Technologies.
 MSc Cybersecurity · CySA+ · PenTest+ · ISC2 CC · AWS CCP.
 
