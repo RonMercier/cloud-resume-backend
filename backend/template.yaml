@@ -39,6 +39,14 @@ Resources:
           - GET
           - OPTIONS
         MaxAge: 3600
+      # --- Rate limiting ---
+      # ThrottlingRateLimit:  sustained requests/sec allowed (token bucket refill rate)
+      # ThrottlingBurstLimit: maximum concurrent requests at any instant
+      # At normal portfolio traffic these limits will never be hit.
+      # They cap runaway abuse before it inflates Lambda/DynamoDB costs.
+      DefaultRouteSettings:
+        ThrottlingRateLimit: 50
+        ThrottlingBurstLimit: 100
 
   # --- Logic layer ---
   VisitorFunction:
@@ -47,6 +55,12 @@ Resources:
       FunctionName: visitor-counter-lambda
       CodeUri: src/
       Handler: app.lambda_handler
+      # --- Concurrency cap ---
+      # Limits simultaneous Lambda executions as a second layer of defence.
+      # 10 concurrent executions is well above any realistic portfolio load.
+      # Without this, a burst that exceeds the API Gateway throttle could
+      # still spin up many Lambdas before the throttle responds.
+      ReservedConcurrentExecutions: 10
       Environment:
         Variables:
           TABLE_NAME: !Ref VisitorTable
