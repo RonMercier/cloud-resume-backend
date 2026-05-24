@@ -12,7 +12,6 @@ Resources:
   VisitorTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      # Optional to name the table; using Ref elsewhere protects you from renames
       TableName: visitorCount
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
@@ -39,14 +38,6 @@ Resources:
           - GET
           - OPTIONS
         MaxAge: 3600
-      # --- Rate limiting ---
-      # ThrottlingRateLimit:  sustained requests/sec allowed (token bucket refill rate)
-      # ThrottlingBurstLimit: maximum concurrent requests at any instant
-      # At normal portfolio traffic these limits will never be hit.
-      # They cap runaway abuse before it inflates Lambda/DynamoDB costs.
-      DefaultRouteSettings:
-        ThrottlingRateLimit: 50
-        ThrottlingBurstLimit: 100
 
   # --- Logic layer ---
   VisitorFunction:
@@ -55,11 +46,9 @@ Resources:
       FunctionName: visitor-counter-lambda
       CodeUri: src/
       Handler: app.lambda_handler
-      # --- Concurrency cap ---
-      # Limits simultaneous Lambda executions as a second layer of defence.
-      # 10 concurrent executions is well above any realistic portfolio load.
-      # Without this, a burst that exceeds the API Gateway throttle could
-      # still spin up many Lambdas before the throttle responds.
+      # Concurrency cap: limits simultaneous Lambda executions.
+      # 10 is well above realistic portfolio traffic.
+      # Requests beyond this are throttled before hitting DynamoDB.
       ReservedConcurrentExecutions: 10
       Environment:
         Variables:
@@ -74,6 +63,13 @@ Resources:
             ApiId: !Ref HttpApi
             Path: /count
             Method: GET
+            # Route-level throttling applied here — supported by SAM for HttpApi.
+            # ThrottlingRateLimit:  sustained requests/sec (token bucket refill rate).
+            # ThrottlingBurstLimit: max concurrent requests at any instant.
+            # Requests over the burst limit get a 429 before Lambda is invoked.
+            RouteSettings:
+              ThrottlingRateLimit: 50
+              ThrottlingBurstLimit: 100
 
 Outputs:
   ApiEndpoint:
