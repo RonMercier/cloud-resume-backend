@@ -12,6 +12,7 @@ Resources:
   VisitorTable:
     Type: AWS::DynamoDB::Table
     Properties:
+      # Optional to name the table; using Ref elsewhere protects you from renames
       TableName: visitorCount
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
@@ -46,10 +47,6 @@ Resources:
       FunctionName: visitor-counter-lambda
       CodeUri: src/
       Handler: app.lambda_handler
-      # Concurrency cap: limits simultaneous Lambda executions.
-      # 10 is well above realistic portfolio traffic.
-      # Requests beyond this are throttled before hitting DynamoDB.
-      ReservedConcurrentExecutions: 10
       Environment:
         Variables:
           TABLE_NAME: !Ref VisitorTable
@@ -63,13 +60,6 @@ Resources:
             ApiId: !Ref HttpApi
             Path: /count
             Method: GET
-            # Route-level throttling applied here — supported by SAM for HttpApi.
-            # ThrottlingRateLimit:  sustained requests/sec (token bucket refill rate).
-            # ThrottlingBurstLimit: max concurrent requests at any instant.
-            # Requests over the burst limit get a 429 before Lambda is invoked.
-            RouteSettings:
-              ThrottlingRateLimit: 50
-              ThrottlingBurstLimit: 100
 
 Outputs:
   ApiEndpoint:
