@@ -82,7 +82,7 @@ The `template.yaml` defines the entire backend stack. Nothing is created manuall
 - Runtime: Python 3.12
 - Handler: `app.lambda_handler`
 - `TABLE_NAME` injected as environment variable via `!Ref VisitorTable`
-- IAM: `DynamoDBCrudPolicy` scoped to this table only — no wildcard permissions
+- IAM: `DynamoDBCrudPolicy` scoped to this table only - no wildcard permissions
 
 **Stack outputs** (printed after every deploy):
 ```
@@ -97,11 +97,11 @@ FunctionName → visitor-counter-lambda
 
 **OIDC instead of stored IAM credentials**
 
-GitHub Actions authenticates to AWS using OpenID Connect — no long-lived access keys stored as GitHub Secrets. The workflow assumes an IAM role scoped to this specific repo and branch. This follows AWS security best practices: credentials are ephemeral, automatically rotated, and can't leak because they were never stored.
+GitHub Actions authenticates to AWS using OpenID Connect - no long-lived access keys stored as GitHub Secrets. The workflow assumes an IAM role scoped to this specific repo and branch. This follows AWS security best practices: credentials are ephemeral, automatically rotated, and can't leak because they were never stored.
 
 **HTTP API over REST API**
 
-API Gateway HTTP API chosen over the older REST API flavor. HTTP API has lower latency, costs approximately 70% less, and supports all features needed here (CORS, Lambda integration, custom domains). REST API's premium features — request validation, caching, usage plans, API keys — are unnecessary for a simple counter endpoint.
+API Gateway HTTP API chosen over the older REST API flavor. HTTP API has lower latency, costs approximately 70% less, and supports all features needed here (CORS, Lambda integration, custom domains). REST API's premium features - request validation, caching, usage plans, API keys - are unnecessary for a simple counter endpoint.
 
 **DynamoDB PAY_PER_REQUEST**
 
@@ -109,11 +109,11 @@ On-demand billing eliminates provisioned capacity management. At portfolio traff
 
 **SAM over raw CloudFormation**
 
-AWS SAM compresses serverless IaC significantly. A Lambda function + HTTP API event source that takes ~60 lines in raw CloudFormation (function, role, API, route, integration, stage, permission) takes ~15 lines in SAM. SAM is a CloudFormation transform — it compiles down to CloudFormation, so there's no lock-in and the full CloudFormation feature set is available when needed.
+AWS SAM compresses serverless IaC significantly. A Lambda function + HTTP API event source that takes ~60 lines in raw CloudFormation (function, role, API, route, integration, stage, permission) takes ~15 lines in SAM. SAM is a CloudFormation transform - it compiles down to CloudFormation, so there's no lock-in and the full CloudFormation feature set is available when needed.
 
 **Environment variable for table name**
 
-`TABLE_NAME` is passed to Lambda as an environment variable via `!Ref VisitorTable` rather than hardcoded in `app.py`. This means the Lambda code has no knowledge of the specific table name — it reads from the environment. The same code works in any environment (dev, staging, prod) without modification.
+`TABLE_NAME` is passed to Lambda as an environment variable via `!Ref VisitorTable` rather than hardcoded in `app.py`. This means the Lambda code has no knowledge of the specific table name - it reads from the environment. The same code works in any environment (dev, staging, prod) without modification.
 
 ---
 
